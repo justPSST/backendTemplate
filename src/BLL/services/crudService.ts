@@ -1,5 +1,5 @@
 import { Document, Model } from 'mongoose';
-import { IBaseEntity, IBaseEntityFilter, IServiceResult, IServiceError, ICrudFilterUnit } from '../interfaces/models';
+import { IBaseEntity, IBaseEntityFilter, IServiceResult, IServiceError, ICrudFilterUnit, IPagination } from '../interfaces/models';
 import { ICrudService } from '../interfaces/services';
 import { Repository } from '../../DAL/repositories';
 import { MongooseMapper, pickSchema } from '../utils';
@@ -76,9 +76,9 @@ export class CrudService<
     }
   }
 
-  public async getAll(): Promise<IServiceResult<TViewModel[]> | IServiceError> {
+  public async getAll(pagination: IPagination = {}): Promise<IServiceResult<TViewModel[]> | IServiceError> {
     try {
-      const result = await this._repository.getAllAsync();
+      const result = await this._repository.getAllAsync(pagination);
       const returnList = result.map((item) => item.toObject() as TViewModel);
       return new ServiceResult(HttpStatuses.OK, returnList);
     } catch (error) {
@@ -98,9 +98,9 @@ export class CrudService<
     }
   }
 
-  public async findMany(conditions: TFilterModel): Promise<IServiceResult<TViewModel[]> | IServiceError> {
+  public async findMany(conditions: TFilterModel, pagination: IPagination = {}): Promise<IServiceResult<TViewModel[]> | IServiceError> {
     try {
-      const result = await this._repository.findManyAsync(conditions);
+      const result = await this._repository.findManyAsync(conditions, pagination);
       const returnList = result.map((item) => item.toObject() as TViewModel);
       return new ServiceResult(HttpStatuses.OK, returnList);
     } catch (error) {

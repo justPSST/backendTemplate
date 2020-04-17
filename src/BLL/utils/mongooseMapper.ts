@@ -1,6 +1,6 @@
 import { Document, Model } from 'mongoose';
 import { ObjectID } from 'mongodb';
-import { IBaseEntity, IBaseEntityFilter } from '../../BLL/interfaces/models';
+import { IBaseEntity, IBaseEntityFilter } from '../interfaces/models';
 
 export class MongooseMapper {
   public static mapViewEntity<
