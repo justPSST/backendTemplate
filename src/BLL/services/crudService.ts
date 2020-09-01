@@ -1,5 +1,5 @@
 import { Document, Model } from 'mongoose';
-import { IBaseEntity, IBaseEntityFilter, IServiceResult, IServiceError, ICrudFilterUnit, IPagination } from '../interfaces/models';
+import { IBaseEntity, IServiceResult, IServiceError, ICrudFilterUnit, IPagination } from '../interfaces/models';
 import { ICrudService } from '../interfaces/services';
 import { Repository } from '../../DAL/repositories';
 import { MongooseMapper, pickSchema } from '../utils';
@@ -8,14 +8,13 @@ import { HttpStatuses } from '../enums';
 
 export class CrudService<
     TViewModel extends IBaseEntity,
-    TEntityModel extends Document,
-    TFilterModel extends IBaseEntityFilter
-  > implements ICrudService<TViewModel, TEntityModel, TFilterModel> {
-  private _repository: Repository<TEntityModel, TFilterModel>;
+    TEntityModel extends Document
+  > implements ICrudService<TViewModel, TEntityModel> {
+  private _repository: Repository<TEntityModel, TViewModel>;
 
   private _model: Model<TEntityModel, {}>;
 
-  constructor(model: Model<TEntityModel, {}>, repository?: Repository<TEntityModel, TFilterModel>) {
+  constructor(model: Model<TEntityModel, {}>, repository?: Repository<TEntityModel, TViewModel>) {
     this._repository = repository || new Repository(model);
     this._model = model;
   }
@@ -41,11 +40,12 @@ export class CrudService<
     }
   }
 
-  public async update(data: TViewModel): Promise<IServiceResult<TViewModel> | IServiceError> {
+  public async update(data: Partial<TViewModel>): Promise<IServiceResult<TViewModel> | IServiceError> {
     try {
-      const entity = MongooseMapper.mapViewEntity<TViewModel, TEntityModel>(data, this._model);
-      const update = MongooseMapper.mapViewFilter<TViewModel, TFilterModel>(data);
-      const result = await this._repository.updateAsync(entity.id, update);
+      if (!data.id) {
+        return new ServiceError(HttpStatuses.BAD_REQUEST, 'Id not specified');
+      }
+      const result = await this._repository.updateAsync(data.id as string, data);
       if (!result) {
         return new ServiceError(HttpStatuses.BAD_REQUEST, 'Not found');
       }
@@ -57,6 +57,9 @@ export class CrudService<
 
   public async delete(id: string): Promise<IServiceResult<void> | IServiceError> {
     try {
+      if (!id) {
+        return new ServiceError(HttpStatuses.BAD_REQUEST, 'Id not specified');
+      }
       await this._repository.removeAsync(id);
       return new ServiceResult(HttpStatuses.OK);
     } catch (error) {
@@ -66,6 +69,9 @@ export class CrudService<
 
   public async get(id: string): Promise<IServiceResult<TViewModel> | IServiceError> {
     try {
+      if (!id) {
+        return new ServiceError(HttpStatuses.BAD_REQUEST, 'Id not specified');
+      }
       const result = await this._repository.getAsync(id);
       if (!result) {
         return new ServiceError(HttpStatuses.BAD_REQUEST, 'Not found');
@@ -86,7 +92,7 @@ export class CrudService<
     }
   }
 
-  public async find(conditions: TFilterModel): Promise<IServiceResult<TViewModel> | IServiceError> {
+  public async find(conditions: Partial<TViewModel>): Promise<IServiceResult<TViewModel> | IServiceError> {
     try {
       const result = await this._repository.findAsync(conditions);
       if (!result) {
@@ -98,7 +104,7 @@ export class CrudService<
     }
   }
 
-  public async findMany(conditions: TFilterModel, pagination: IPagination = {}): Promise<IServiceResult<TViewModel[]> | IServiceError> {
+  public async findMany(conditions: Partial<TViewModel>, pagination: IPagination = {}): Promise<IServiceResult<TViewModel[]> | IServiceError> {
     try {
       const result = await this._repository.findManyAsync(conditions, pagination);
       const returnList = result.map((item) => item.toObject() as TViewModel);

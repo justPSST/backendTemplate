@@ -1,17 +1,16 @@
 import { Document } from 'mongoose';
-import { IBaseEntityFilter } from '../../../BLL/interfaces/models/entity/baseEntity';
+import { IBaseEntity, IPagination } from '../../../BLL/interfaces/models';
 
-export interface IRepository<TEntityModel extends Document, TFilterModel extends IBaseEntityFilter> {
+export interface IRepository<TEntityModel extends Document, TViewModel extends IBaseEntity> {
   addAsync(entity: TEntityModel): Promise<TEntityModel>;
   addListAsync(entityArray: TEntityModel[]): Promise<TEntityModel[]>;
-  updateAsync(id: string, update: TFilterModel): Promise<TEntityModel | null>;
+  updateAsync(id: string, update: Partial<TViewModel>): Promise<TEntityModel | null>;
   removeAsync(id: string): Promise<void>;
   removeListAsync(ids: string[]): Promise<void>;
   countAsync(): Promise<number>;
+  countFilteredAsync(conditions: Partial<TViewModel>): Promise<number>
   getAsync(id: string): Promise<TEntityModel | null>;
-  getAllAsync(): Promise<TEntityModel[]>;
-  findAsync(conditions: TFilterModel): Promise<TEntityModel | null>;
-  findManyAsync(conditions: TFilterModel): Promise<TEntityModel[]>;
-  markAsDeletedAsync(id: string): Promise<void>;
-  markAsUndeletedAsync(id: string): Promise<void>;
+  getAllAsync(pagination: IPagination): Promise<TEntityModel[]>;
+  findAsync(conditions: Partial<TViewModel>): Promise<TEntityModel | null>;
+  findManyAsync(conditions: Partial<TViewModel>, pagination: IPagination): Promise<TEntityModel[]>;
 }

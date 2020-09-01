@@ -8,5 +8,3 @@ export interface ILog extends IBaseEntity {
   logType: LogType;
   data?: string;
 }
-
-export type ILogFilter = Partial<ILog>;

@@ -1,12 +1,11 @@
 import { Document, Model, QueryFindOneAndUpdateOptions } from 'mongoose';
 import { IRepository } from '../interfaces/repositories';
-import { IBaseEntityFilter } from '../../BLL/interfaces/models';
-import { IPagination } from '../../BLL/interfaces/models';
+import { IBaseEntity, IPagination } from '../../BLL/interfaces/models';
 
 export class Repository<
     TEntityModel extends Document,
-    TFilterModel extends IBaseEntityFilter
-  > implements IRepository<TEntityModel, TFilterModel> {
+    TViewModel extends IBaseEntity
+  > implements IRepository<TEntityModel, TViewModel> {
   protected _model: Model<TEntityModel>;
 
   constructor(model: Model<TEntityModel>) {
@@ -23,7 +22,7 @@ export class Repository<
     return result;
   }
 
-  public async updateAsync(id: string, update: TFilterModel): Promise<TEntityModel | null> {
+  public async updateAsync(id: string, update: Partial<TViewModel>): Promise<TEntityModel | null> {
     const options: QueryFindOneAndUpdateOptions = { new: true, runValidators: true };
     const result = await this._model.findByIdAndUpdate(id, update, options);
     return result;
@@ -42,7 +41,7 @@ export class Repository<
     return count;
   }
 
-  public async countFilteredAsync(conditions: TFilterModel): Promise<number> {
+  public async countFilteredAsync(conditions: Partial<TViewModel>): Promise<number> {
     const count = await this._model.count(conditions as any);
     return count;
   }
@@ -64,12 +63,12 @@ export class Repository<
     return result;
   }
 
-  public async findAsync(conditions: TFilterModel): Promise<TEntityModel | null> {
+  public async findAsync(conditions: Partial<TViewModel>): Promise<TEntityModel | null> {
     const result = await this._model.findOne(conditions as any);
     return result;
   }
 
-  public async findManyAsync(conditions: TFilterModel, pagination: IPagination = {}): Promise<TEntityModel[]> {
+  public async findManyAsync(conditions: Partial<TViewModel>, pagination: IPagination = {}): Promise<TEntityModel[]> {
     let query = this._model.find(conditions as any);
     if (pagination.page) {
       query = query.skip(pagination.page);
@@ -79,15 +78,5 @@ export class Repository<
     }
     const result = await query;
     return result;
-  }
-
-  public async markAsDeletedAsync(id: string): Promise<void> {
-    const update = { deleted: true };
-    await this._model.findByIdAndUpdate(id, update);
-  }
-
-  public async markAsUndeletedAsync(id: string): Promise<void> {
-    const update = { deleted: false };
-    await this._model.findByIdAndUpdate(id, update);
   }
 }
