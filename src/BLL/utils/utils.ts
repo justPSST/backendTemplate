@@ -2,11 +2,9 @@ import { Model, Document } from 'mongoose';
 import { ICrudFilterUnit } from '../interfaces/models/crudFilter';
 import { IExtendedSchemaType } from '../interfaces/models/extendedSchemaType';
 
-export const getRandomCode = () => {
-  return Math.floor(Math.random() * (9999 - 1000)) + 1000;
-};
+export const getRandomCode = () => Math.floor(Math.random() * (9999 - 1000)) + 1000;
 
-export const defaultTransform = (doc: Model<Document>, ret: Document, options: object) => {
+export const defaultTransform = (doc: Model<Document>, ret: Document) => {
   ret.id = ret._id.toString();
   delete ret._id;
   return ret;

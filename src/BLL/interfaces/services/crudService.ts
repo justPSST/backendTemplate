@@ -1,5 +1,8 @@
+/* eslint-disable no-unused-vars */
 import { Document } from 'mongoose';
-import { IBaseEntity, IServiceResult, IServiceError, ICrudFilterUnit, IPagination } from '../models';
+import {
+  IBaseEntity, IServiceResult, IServiceError, ICrudFilterUnit, IPagination
+} from '../models';
 
 export interface ICrudService<
     TViewModel extends IBaseEntity,

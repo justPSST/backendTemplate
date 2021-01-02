@@ -8,4 +8,4 @@ export {
   Locales,
   Socials,
   LogType
-}
+};

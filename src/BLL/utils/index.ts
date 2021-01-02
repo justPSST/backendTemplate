@@ -1,4 +1,6 @@
-import { getRandomCode, defaultTransform, formatString, pickSchema } from './utils';
+import {
+  getRandomCode, defaultTransform, formatString, pickSchema
+} from './utils';
 import { MongooseMapper } from './mongooseMapper';
 
 export {
@@ -10,4 +12,4 @@ export {
 
 export {
   MongooseMapper
-}
+};

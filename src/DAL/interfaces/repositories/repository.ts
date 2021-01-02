@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 import { Document } from 'mongoose';
 import { IBaseEntity, IPagination } from '../../../BLL/interfaces/models';
 

@@ -1,3 +1,3 @@
 import { IRepository } from './repository';
 
-export { IRepository }
+export { IRepository };

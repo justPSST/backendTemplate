@@ -1,5 +1,7 @@
 import { Document, Model } from 'mongoose';
-import { IBaseEntity, IServiceResult, IServiceError, ICrudFilterUnit, IPagination } from '../interfaces/models';
+import {
+  IBaseEntity, IServiceResult, IServiceError, ICrudFilterUnit, IPagination
+} from '../interfaces/models';
 import { ICrudService } from '../interfaces/services';
 import { Repository } from '../../DAL/repositories';
 import { MongooseMapper, pickSchema } from '../utils';
@@ -12,16 +14,16 @@ export class CrudService<
   > implements ICrudService<TViewModel, TEntityModel> {
   private _repository: Repository<TEntityModel, TViewModel>;
 
-  private _model: Model<TEntityModel, {}>;
+  private model: Model<TEntityModel, {}>;
 
   constructor(model: Model<TEntityModel, {}>, repository?: Repository<TEntityModel, TViewModel>) {
     this._repository = repository || new Repository(model);
-    this._model = model;
+    this.model = model;
   }
 
   public async add(data: TViewModel): Promise<IServiceResult<TViewModel> | IServiceError> {
     try {
-      const entity = MongooseMapper.mapViewEntity<TViewModel, TEntityModel>(data, this._model);
+      const entity = MongooseMapper.mapViewEntity<TViewModel, TEntityModel>(data, this.model);
       const result = await this._repository.addAsync(entity);
       return new ServiceResult(HttpStatuses.OK, result.toObject() as TViewModel);
     } catch (error) {
@@ -31,7 +33,7 @@ export class CrudService<
 
   public async addList(dataList: TViewModel[]): Promise<IServiceResult<TViewModel[]> | IServiceError> {
     try {
-      const entityList = dataList.map((data) => MongooseMapper.mapViewEntity<TViewModel, TEntityModel>(data, this._model));
+      const entityList = dataList.map((data) => MongooseMapper.mapViewEntity<TViewModel, TEntityModel>(data, this.model));
       const result = await this._repository.addListAsync(entityList);
       const returnList = result.map((item) => item.toObject() as TViewModel);
       return new ServiceResult(HttpStatuses.OK, returnList);
@@ -115,7 +117,7 @@ export class CrudService<
   }
 
   public getFilterModel(): IServiceResult<ICrudFilterUnit[]> {
-    const filterModel = pickSchema(this._model);
+    const filterModel = pickSchema(this.model);
     return new ServiceResult(HttpStatuses.OK, filterModel);
   }
 }

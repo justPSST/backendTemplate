@@ -14,4 +14,4 @@ export {
   IPagination,
   IServiceError,
   IServiceResult
-}
+};

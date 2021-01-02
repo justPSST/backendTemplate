@@ -14,17 +14,26 @@ export interface IServiceConfig {
 }
 
 export class App {
-
   constructor(configuration: IServiceConfig) {
     this.config(configuration);
   }
 
   private config(configuration: IServiceConfig): void {
-    this.initBroker(configuration.serviceName, configuration.messageHandler, configuration.messageConfig?.connectionString, configuration.messageConfig?.prefetch);
+    this.initBroker(
+      configuration.serviceName,
+      configuration.messageHandler,
+      configuration.messageConfig?.connectionString,
+      configuration.messageConfig?.prefetch,
+    );
     this.setDatabase(configuration.dbConnectionString, configuration.dbSeeder);
   }
 
-  private async initBroker(serviceName: string, messageHandler: Function, connectionString?: string, prefetch?: number): Promise<void> {
+  private async initBroker(
+    serviceName: string,
+    messageHandler: Function,
+    connectionString?: string,
+    prefetch?: number,
+  ): Promise<void> {
     await configureService(serviceName, messageHandler, connectionString, prefetch);
   }
 
@@ -32,8 +41,7 @@ export class App {
     try {
       mongoose.set('useCreateIndex', true);
       await mongoose.connect(`${dbConnectionString}`,
-        { useNewUrlParser: true, useUnifiedTopology: true, useFindAndModify: false }
-      );
+        { useNewUrlParser: true, useUnifiedTopology: true, useFindAndModify: false });
       console.log('MongoDB has started...');
       if (dbSeeder) {
         dbSeeder.dbSeed();
