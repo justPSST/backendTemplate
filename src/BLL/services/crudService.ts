@@ -1,10 +1,9 @@
-import { Document, Model } from 'mongoose';
+import { Document, Model, QueryFindOneAndUpdateOptions } from 'mongoose';
 import {
   IBaseEntity, IServiceResult, IServiceError, ICrudFilterUnit, IPagination
 } from '../interfaces/models';
 import { ICrudService } from '../interfaces/services';
-import { Repository } from '../../DAL/repositories';
-import { MongooseMapper, pickSchema } from '../utils';
+import { pickSchema } from '../utils';
 import { ServiceResult, ServiceError } from '../models';
 import { HttpStatuses } from '../enums';
 
@@ -12,20 +11,16 @@ export class CrudService<
     TViewModel extends IBaseEntity,
     TEntityModel extends Document
   > implements ICrudService<TViewModel, TEntityModel> {
-  private _repository: Repository<TEntityModel, TViewModel>;
-
   private model: Model<TEntityModel, {}>;
 
-  constructor(model: Model<TEntityModel, {}>, repository?: Repository<TEntityModel, TViewModel>) {
-    this._repository = repository || new Repository(model);
+  constructor(model: Model<TEntityModel, {}>) {
     this.model = model;
   }
 
   public async add(data: TViewModel): Promise<IServiceResult<TViewModel> | IServiceError> {
     try {
-      const entity = MongooseMapper.mapViewEntity<TViewModel, TEntityModel>(data, this.model);
-      const result = await this._repository.addAsync(entity);
-      return new ServiceResult(HttpStatuses.OK, result.toObject() as TViewModel);
+      const result = await this.model.create(data);
+      return new ServiceResult(HttpStatuses.OK, result.toObject());
     } catch (error) {
       return new ServiceError(HttpStatuses.SERVER_ERROR, error.message);
     }
@@ -33,9 +28,8 @@ export class CrudService<
 
   public async addList(dataList: TViewModel[]): Promise<IServiceResult<TViewModel[]> | IServiceError> {
     try {
-      const entityList = dataList.map((data) => MongooseMapper.mapViewEntity<TViewModel, TEntityModel>(data, this.model));
-      const result = await this._repository.addListAsync(entityList);
-      const returnList = result.map((item) => item.toObject() as TViewModel);
+      const result = await this.model.insertMany(dataList);
+      const returnList = result.map((item) => item.toObject());
       return new ServiceResult(HttpStatuses.OK, returnList);
     } catch (error) {
       return new ServiceError(HttpStatuses.SERVER_ERROR, error.message);
@@ -47,11 +41,12 @@ export class CrudService<
       if (!data.id) {
         return new ServiceError(HttpStatuses.BAD_REQUEST, 'Id not specified');
       }
-      const result = await this._repository.updateAsync(data.id as string, data);
+      const options: QueryFindOneAndUpdateOptions = { new: true, runValidators: true };
+      const result = await this.model.findByIdAndUpdate(data.id, data, options);
       if (!result) {
         return new ServiceError(HttpStatuses.BAD_REQUEST, 'Not found');
       }
-      return new ServiceResult(HttpStatuses.OK, result.toObject() as TViewModel);
+      return new ServiceResult(HttpStatuses.OK, result.toObject());
     } catch (error) {
       return new ServiceError(HttpStatuses.SERVER_ERROR, error.message);
     }
@@ -62,32 +57,39 @@ export class CrudService<
       if (!id) {
         return new ServiceError(HttpStatuses.BAD_REQUEST, 'Id not specified');
       }
-      await this._repository.removeAsync(id);
+      await this.model.findByIdAndDelete(id);
       return new ServiceResult(HttpStatuses.OK);
     } catch (error) {
       return new ServiceError(HttpStatuses.SERVER_ERROR, error.message);
     }
   }
 
-  public async get(id: string): Promise<IServiceResult<TViewModel> | IServiceError> {
+  public async getById(id: string): Promise<IServiceResult<TViewModel> | IServiceError> {
     try {
       if (!id) {
         return new ServiceError(HttpStatuses.BAD_REQUEST, 'Id not specified');
       }
-      const result = await this._repository.getAsync(id);
+      const result = await this.model.findById(id);
       if (!result) {
         return new ServiceError(HttpStatuses.BAD_REQUEST, 'Not found');
       }
-      return new ServiceResult(HttpStatuses.OK, result.toObject() as TViewModel);
+      return new ServiceResult(HttpStatuses.OK, result.toObject());
     } catch (error) {
       return new ServiceError(HttpStatuses.SERVER_ERROR, error.message);
     }
   }
 
-  public async getAll(pagination: IPagination = {}): Promise<IServiceResult<TViewModel[]> | IServiceError> {
+  public async findMany(conditions: Partial<TViewModel>, pagination: IPagination = {}): Promise<IServiceResult<TViewModel[]> | IServiceError> {
     try {
-      const result = await this._repository.getAllAsync(pagination);
-      const returnList = result.map((item) => item.toObject() as TViewModel);
+      let query = this.model.find(conditions as any);
+      if (pagination.page) {
+        query = query.skip(pagination.page);
+      }
+      if (pagination.limit) {
+        query = query.limit(pagination.limit);
+      }
+      const result = await query;
+      const returnList = result.map((item) => item.toObject());
       return new ServiceResult(HttpStatuses.OK, returnList);
     } catch (error) {
       return new ServiceError(HttpStatuses.SERVER_ERROR, error.message);
@@ -96,21 +98,11 @@ export class CrudService<
 
   public async find(conditions: Partial<TViewModel>): Promise<IServiceResult<TViewModel> | IServiceError> {
     try {
-      const result = await this._repository.findAsync(conditions);
+      const result = await this.model.findOne(conditions as any);
       if (!result) {
         return new ServiceError(HttpStatuses.BAD_REQUEST, 'Not found');
       }
       return new ServiceResult(HttpStatuses.OK, result.toObject() as TViewModel);
-    } catch (error) {
-      return new ServiceError(HttpStatuses.SERVER_ERROR, error.message);
-    }
-  }
-
-  public async findMany(conditions: Partial<TViewModel>, pagination: IPagination = {}): Promise<IServiceResult<TViewModel[]> | IServiceError> {
-    try {
-      const result = await this._repository.findManyAsync(conditions, pagination);
-      const returnList = result.map((item) => item.toObject() as TViewModel);
-      return new ServiceResult(HttpStatuses.OK, returnList);
     } catch (error) {
       return new ServiceError(HttpStatuses.SERVER_ERROR, error.message);
     }

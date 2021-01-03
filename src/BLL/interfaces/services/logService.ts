@@ -2,5 +2,5 @@
 import { LogType } from '../../enums/logType';
 
 export interface ILogService {
-  addLog(message: string, action: string, logType: LogType, data?: any): void;
+  addLog(message: string, action: string, logType: LogType, data: Object): void;
 }
