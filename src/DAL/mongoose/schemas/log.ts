@@ -1,9 +1,10 @@
 import * as mongoose from 'mongoose';
 import { defaultTransform } from '../../../BLL/utils';
+import { IMongooseLog } from '../interfaces/mongooseLog';
 
 const { Schema } = mongoose;
 
-export const logSchema = new Schema({
+export const logSchema = new Schema<mongoose.Document<IMongooseLog>>({
   message: {
     type: String,
     required: true

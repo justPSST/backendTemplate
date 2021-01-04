@@ -1,12 +1,8 @@
-/* eslint-disable no-unused-vars */
-import { Document } from 'mongoose';
 import {
-  IBaseEntity, IServiceResult, IServiceError, ICrudFilterUnit, IPagination
+  IServiceResult, IServiceError, ICrudFilterUnit, IPagination
 } from '../models';
 
-export interface ICrudService<
-    TViewModel extends IBaseEntity
-  > {
+export interface ICrudService<TViewModel extends { id?: string }> {
   add(data: TViewModel): Promise<IServiceResult<TViewModel> | IServiceError>;
   update(data: TViewModel): Promise<IServiceResult<TViewModel> | IServiceError>;
   delete(id: string): Promise<IServiceResult<void> | IServiceError>;

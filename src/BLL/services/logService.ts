@@ -1,11 +1,9 @@
 import { LogType } from '../enums/logType';
-import { ILogService } from '../interfaces/services/logService';
-import { ILog } from '../interfaces/models/entity/log';
 import { LogModel } from '../../DAL/mongoose/models/mongooseLog';
-import { IMongooseLog } from '../../DAL/mongoose/interfaces/mongooseLog';
+import { ILog } from '../interfaces/models/entity/log';
 
-export class LogService implements ILogService {
-  public addLog(message: string, action: string, logType: LogType, data = {}): Promise<IMongooseLog> {
+export class LogService {
+  public addLog(message: string, action: string, logType: LogType, data = {}) {
     const log: ILog = {
       message,
       created: new Date(),

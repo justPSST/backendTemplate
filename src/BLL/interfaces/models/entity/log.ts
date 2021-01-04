@@ -1,10 +1,9 @@
 import { LogType } from '../../../enums/logType';
-import { IBaseEntity } from './baseEntity';
 
-export interface ILog extends IBaseEntity {
+export interface ILog {
   message: string;
   action: string;
   created: Date;
   logType: LogType;
-  data?: string;
+  data?: string | Object;
 }

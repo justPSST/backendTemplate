@@ -1,6 +1,4 @@
-import { IBaseDocument } from './baseDocument';
-
-export interface IMongooseLog extends IBaseDocument {
+export interface IMongooseLog {
   message: string;
   created: Date;
   action: string;

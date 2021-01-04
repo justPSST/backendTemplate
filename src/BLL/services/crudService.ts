@@ -1,18 +1,16 @@
 import { Document, Model } from 'mongoose';
 import {
-  IBaseEntity, IServiceResult, IServiceError, ICrudFilterUnit, IPagination
+  IServiceResult, IServiceError, ICrudFilterUnit, IPagination
 } from '../interfaces/models';
 import { ICrudService } from '../interfaces/services';
 import { pickSchema } from '../utils';
 import { ServiceResult, ServiceError } from '../models';
 import { HttpStatuses } from '../enums';
 
-export class CrudService<
-    TViewModel extends IBaseEntity
-  > implements ICrudService<TViewModel> {
-  private Model: Model<Document<TViewModel>>;
+export class CrudService<TViewModel extends { id?: string }> implements ICrudService<TViewModel> {
+  private Model: Model<Document & TViewModel>;
 
-  constructor(model: Model<Document<TViewModel>>) {
+  constructor(model: Model<Document & TViewModel>) {
     this.Model = model;
   }
 
@@ -102,7 +100,7 @@ export class CrudService<
       if (!result) {
         return new ServiceError(HttpStatuses.BAD_REQUEST, 'Not found');
       }
-      return new ServiceResult(HttpStatuses.OK, result.toObject() as TViewModel);
+      return new ServiceResult(HttpStatuses.OK, result.toObject());
     } catch (error) {
       return new ServiceError(HttpStatuses.SERVER_ERROR, error.message);
     }
