@@ -1,6 +1,6 @@
 {
   "name": "@justpsst/backendtemplate",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "NodeJS MongoDB backend template",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -10,13 +10,10 @@
     "@justpsst/servicemessaging": "^1.0.3",
     "i18n": "^0.8.6",
     "jsonwebtoken": "^8.5.1",
-    "mongodb": "^3.5.5",
-    "mongoose": "^5.9.9"
+    "mongoose": "^5.11.9"
   },
   "devDependencies": {
     "@types/jsonwebtoken": "^8.3.9",
-    "@types/mongodb": "^3.5.5",
-    "@types/mongoose": "^5.7.11",
     "@typescript-eslint/eslint-plugin": "^4.11.1",
     "@typescript-eslint/parser": "^4.11.1",
     "eslint": "^7.17.0",

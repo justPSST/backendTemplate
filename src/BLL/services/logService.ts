@@ -5,8 +5,6 @@ import { LogModel } from '../../DAL/mongoose/models/mongooseLog';
 import { IMongooseLog } from '../../DAL/mongoose/interfaces/mongooseLog';
 
 export class LogService implements ILogService {
-  model = LogModel;
-
   public addLog(message: string, action: string, logType: LogType, data = {}): Promise<IMongooseLog> {
     const log: ILog = {
       message,
@@ -15,6 +13,6 @@ export class LogService implements ILogService {
       logType,
       data: JSON.stringify(data)
     };
-    return this.model.create(log);
+    return new LogModel(log).save();
   }
 }

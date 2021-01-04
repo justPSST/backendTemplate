@@ -5,8 +5,7 @@ import {
 } from '../models';
 
 export interface ICrudService<
-    TViewModel extends IBaseEntity,
-    TEntityModel extends Document
+    TViewModel extends IBaseEntity
   > {
   add(data: TViewModel): Promise<IServiceResult<TViewModel> | IServiceError>;
   update(data: TViewModel): Promise<IServiceResult<TViewModel> | IServiceError>;

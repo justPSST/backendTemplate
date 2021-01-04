@@ -1,6 +1,6 @@
 import { IActionResult } from './actionResult';
 
-export interface IServiceResult<T> extends IActionResult {
+export interface IServiceResult<T = any> extends IActionResult {
   body?: T;
   isError: boolean;
 }

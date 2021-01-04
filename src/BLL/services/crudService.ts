@@ -1,4 +1,4 @@
-import { Document, Model, QueryFindOneAndUpdateOptions } from 'mongoose';
+import { Document, Model } from 'mongoose';
 import {
   IBaseEntity, IServiceResult, IServiceError, ICrudFilterUnit, IPagination
 } from '../interfaces/models';
@@ -8,27 +8,27 @@ import { ServiceResult, ServiceError } from '../models';
 import { HttpStatuses } from '../enums';
 
 export class CrudService<
-    TViewModel extends IBaseEntity,
-    TEntityModel extends Document
-  > implements ICrudService<TViewModel, TEntityModel> {
-  private model: Model<TEntityModel, {}>;
+    TViewModel extends IBaseEntity
+  > implements ICrudService<TViewModel> {
+  private Model: Model<Document<TViewModel>>;
 
-  constructor(model: Model<TEntityModel, {}>) {
-    this.model = model;
+  constructor(model: Model<Document<TViewModel>>) {
+    this.Model = model;
   }
 
-  public async add(data: TViewModel): Promise<IServiceResult<TViewModel> | IServiceError> {
+  public async add(data: TViewModel): Promise<IServiceResult | IServiceError> {
     try {
-      const result = await this.model.create(data);
+      const result = await new this.Model(data).save();
       return new ServiceResult(HttpStatuses.OK, result.toObject());
     } catch (error) {
       return new ServiceError(HttpStatuses.SERVER_ERROR, error.message);
     }
   }
 
-  public async addList(dataList: TViewModel[]): Promise<IServiceResult<TViewModel[]> | IServiceError> {
+  public async addList(dataList: TViewModel[]): Promise<IServiceResult | IServiceError> {
     try {
-      const result = await this.model.insertMany(dataList);
+      const models = dataList.map((data) => new this.Model(data));
+      const result = await this.Model.insertMany(models);
       const returnList = result.map((item) => item.toObject());
       return new ServiceResult(HttpStatuses.OK, returnList);
     } catch (error) {
@@ -36,13 +36,13 @@ export class CrudService<
     }
   }
 
-  public async update(data: Partial<TViewModel>): Promise<IServiceResult<TViewModel> | IServiceError> {
+  public async update(data: Partial<TViewModel>): Promise<IServiceResult | IServiceError> {
     try {
       if (!data.id) {
         return new ServiceError(HttpStatuses.BAD_REQUEST, 'Id not specified');
       }
-      const options: QueryFindOneAndUpdateOptions = { new: true, runValidators: true };
-      const result = await this.model.findByIdAndUpdate(data.id, data, options);
+      const options = { new: true, runValidators: true };
+      const result = await this.Model.findByIdAndUpdate(data.id, data as any, options);
       if (!result) {
         return new ServiceError(HttpStatuses.BAD_REQUEST, 'Not found');
       }
@@ -52,24 +52,24 @@ export class CrudService<
     }
   }
 
-  public async delete(id: string): Promise<IServiceResult<void> | IServiceError> {
+  public async delete(id: string): Promise<IServiceResult | IServiceError> {
     try {
       if (!id) {
         return new ServiceError(HttpStatuses.BAD_REQUEST, 'Id not specified');
       }
-      await this.model.findByIdAndDelete(id);
+      await this.Model.findByIdAndDelete(id);
       return new ServiceResult(HttpStatuses.OK);
     } catch (error) {
       return new ServiceError(HttpStatuses.SERVER_ERROR, error.message);
     }
   }
 
-  public async getById(id: string): Promise<IServiceResult<TViewModel> | IServiceError> {
+  public async getById(id: string): Promise<IServiceResult | IServiceError> {
     try {
       if (!id) {
         return new ServiceError(HttpStatuses.BAD_REQUEST, 'Id not specified');
       }
-      const result = await this.model.findById(id);
+      const result = await this.Model.findById(id);
       if (!result) {
         return new ServiceError(HttpStatuses.BAD_REQUEST, 'Not found');
       }
@@ -79,9 +79,9 @@ export class CrudService<
     }
   }
 
-  public async findMany(conditions: Partial<TViewModel>, pagination: IPagination = {}): Promise<IServiceResult<TViewModel[]> | IServiceError> {
+  public async findMany(conditions: Partial<TViewModel>, pagination: IPagination = {}): Promise<IServiceResult | IServiceError> {
     try {
-      let query = this.model.find(conditions as any);
+      let query = this.Model.find(conditions as any);
       if (pagination.page) {
         query = query.skip(pagination.page);
       }
@@ -96,9 +96,9 @@ export class CrudService<
     }
   }
 
-  public async find(conditions: Partial<TViewModel>): Promise<IServiceResult<TViewModel> | IServiceError> {
+  public async find(conditions: Partial<TViewModel>): Promise<IServiceResult | IServiceError> {
     try {
-      const result = await this.model.findOne(conditions as any);
+      const result = await this.Model.findOne(conditions as any);
       if (!result) {
         return new ServiceError(HttpStatuses.BAD_REQUEST, 'Not found');
       }
@@ -109,7 +109,7 @@ export class CrudService<
   }
 
   public getFilterModel(): IServiceResult<ICrudFilterUnit[]> {
-    const filterModel = pickSchema(this.model);
+    const filterModel = pickSchema(this.Model);
     return new ServiceResult(HttpStatuses.OK, filterModel);
   }
 }

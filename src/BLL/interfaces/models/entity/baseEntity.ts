@@ -1,6 +1,6 @@
-import { ObjectID } from 'mongodb';
+import { ObjectId } from 'mongoose';
 
 export interface IBaseEntity {
   id?: string;
-  _id?: ObjectID;
+  _id?: ObjectId;
 }

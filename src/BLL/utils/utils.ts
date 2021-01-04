@@ -18,7 +18,7 @@ export const formatString = (str: string, params: any = {}): string => {
   return resultStr;
 };
 
-export const pickSchema = <T extends Document>(model: Model<T, {}>): ICrudFilterUnit[] => {
+export const pickSchema = <T extends Document>(model: Model<T>): ICrudFilterUnit[] => {
   const excluded: string[] = ['_id', '__v'];
   const fields: ICrudFilterUnit[] = [];
   model.schema.eachPath((fieldName) => {

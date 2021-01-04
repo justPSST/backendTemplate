@@ -1,7 +1,6 @@
-import { ObjectID } from 'mongodb';
-import { Document } from 'mongoose';
+import { Document, ObjectId } from 'mongoose';
 
 export interface IBaseDocument extends Document {
-  _id: ObjectID;
+  _id: ObjectId;
   id: string;
 }
