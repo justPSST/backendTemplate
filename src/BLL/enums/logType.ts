@@ -2,5 +2,7 @@
 /* eslint-disable no-shadow */
 export enum LogType {
   INFO,
-  ERROR
+  ERROR,
+  WARN,
+  SILLY
 }

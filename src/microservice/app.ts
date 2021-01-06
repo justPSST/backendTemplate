@@ -1,12 +1,10 @@
 import mongoose from 'mongoose';
 import { configureService } from '@justpsst/servicemessaging';
-import { IDbSeeder } from '../BLL';
 
 export interface IServiceConfig {
   serviceName: string;
   dbConnectionString: string;
   messageHandler: Function;
-  dbSeeder?: IDbSeeder;
   messageConfig?: {
     prefetch?: number;
     connectionString?: string;
@@ -25,7 +23,7 @@ export class App {
       configuration.messageConfig?.connectionString,
       configuration.messageConfig?.prefetch,
     );
-    this.setDatabase(configuration.dbConnectionString, configuration.dbSeeder);
+    this.setDatabase(configuration.dbConnectionString);
   }
 
   private async initBroker(
@@ -37,17 +35,15 @@ export class App {
     await configureService(serviceName, messageHandler, connectionString, prefetch);
   }
 
-  private async setDatabase(dbConnectionString: string, dbSeeder?: IDbSeeder): Promise<void> {
+  private async setDatabase(dbConnectionString: string): Promise<void> {
     try {
       mongoose.set('useCreateIndex', true);
       await mongoose.connect(`${dbConnectionString}`,
         { useNewUrlParser: true, useUnifiedTopology: true, useFindAndModify: false });
       console.log('MongoDB has started...');
-      if (dbSeeder) {
-        dbSeeder.dbSeed();
-      }
-    } catch (err) {
-      console.log(err);
+    } catch (error) {
+      console.log(error);
+      throw new Error(error);
     }
   }
 }

@@ -1,13 +1,11 @@
 import { Document, Model } from 'mongoose';
 import {
-  IServiceResult, IServiceError, ICrudFilterUnit, IPagination
+  IServiceResult, IServiceError, IPagination
 } from '../interfaces/models';
-import { ICrudService } from '../interfaces/services';
-import { pickSchema } from '../utils';
 import { ServiceResult, ServiceError } from '../models';
 import { HttpStatuses } from '../enums';
 
-export class CrudService<TViewModel extends { id?: string }> implements ICrudService<TViewModel> {
+export class CrudService<TViewModel extends { id?: string }> {
   private Model: Model<Document & TViewModel>;
 
   constructor(model: Model<Document & TViewModel>) {
@@ -19,7 +17,7 @@ export class CrudService<TViewModel extends { id?: string }> implements ICrudSer
       const result = await new this.Model(data).save();
       return new ServiceResult(HttpStatuses.OK, result.toObject());
     } catch (error) {
-      return new ServiceError(HttpStatuses.SERVER_ERROR, error.message);
+      return new ServiceError(HttpStatuses.INTERNAL_SERVER_ERROR, error.message);
     }
   }
 
@@ -30,7 +28,7 @@ export class CrudService<TViewModel extends { id?: string }> implements ICrudSer
       const returnList = result.map((item) => item.toObject());
       return new ServiceResult(HttpStatuses.OK, returnList);
     } catch (error) {
-      return new ServiceError(HttpStatuses.SERVER_ERROR, error.message);
+      return new ServiceError(HttpStatuses.INTERNAL_SERVER_ERROR, error.message);
     }
   }
 
@@ -46,7 +44,7 @@ export class CrudService<TViewModel extends { id?: string }> implements ICrudSer
       }
       return new ServiceResult(HttpStatuses.OK, result.toObject());
     } catch (error) {
-      return new ServiceError(HttpStatuses.SERVER_ERROR, error.message);
+      return new ServiceError(HttpStatuses.INTERNAL_SERVER_ERROR, error.message);
     }
   }
 
@@ -58,7 +56,7 @@ export class CrudService<TViewModel extends { id?: string }> implements ICrudSer
       await this.Model.findByIdAndDelete(id);
       return new ServiceResult(HttpStatuses.OK);
     } catch (error) {
-      return new ServiceError(HttpStatuses.SERVER_ERROR, error.message);
+      return new ServiceError(HttpStatuses.INTERNAL_SERVER_ERROR, error.message);
     }
   }
 
@@ -73,15 +71,15 @@ export class CrudService<TViewModel extends { id?: string }> implements ICrudSer
       }
       return new ServiceResult(HttpStatuses.OK, result.toObject());
     } catch (error) {
-      return new ServiceError(HttpStatuses.SERVER_ERROR, error.message);
+      return new ServiceError(HttpStatuses.INTERNAL_SERVER_ERROR, error.message);
     }
   }
 
   public async findMany(conditions: Partial<TViewModel>, pagination: IPagination = {}): Promise<IServiceResult | IServiceError> {
     try {
       let query = this.Model.find(conditions as any);
-      if (pagination.page) {
-        query = query.skip(pagination.page);
+      if (pagination.skip) {
+        query = query.skip(pagination.skip);
       }
       if (pagination.limit) {
         query = query.limit(pagination.limit);
@@ -90,7 +88,7 @@ export class CrudService<TViewModel extends { id?: string }> implements ICrudSer
       const returnList = result.map((item) => item.toObject());
       return new ServiceResult(HttpStatuses.OK, returnList);
     } catch (error) {
-      return new ServiceError(HttpStatuses.SERVER_ERROR, error.message);
+      return new ServiceError(HttpStatuses.INTERNAL_SERVER_ERROR, error.message);
     }
   }
 
@@ -102,12 +100,7 @@ export class CrudService<TViewModel extends { id?: string }> implements ICrudSer
       }
       return new ServiceResult(HttpStatuses.OK, result.toObject());
     } catch (error) {
-      return new ServiceError(HttpStatuses.SERVER_ERROR, error.message);
+      return new ServiceError(HttpStatuses.INTERNAL_SERVER_ERROR, error.message);
     }
-  }
-
-  public getFilterModel(): IServiceResult<ICrudFilterUnit[]> {
-    const filterModel = pickSchema(this.Model);
-    return new ServiceResult(HttpStatuses.OK, filterModel);
   }
 }

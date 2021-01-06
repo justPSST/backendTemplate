@@ -1,10 +1,9 @@
 import {
-  getRandomCode, defaultTransform, formatString, pickSchema
+  getRandomCode, defaultTransform, formatString
 } from './utils';
 
 export {
   getRandomCode,
   defaultTransform,
-  formatString,
-  pickSchema
+  formatString
 };
