@@ -24,7 +24,7 @@
       "comma-dangle": "off",
       "max-len": [
         "warn",
-        160
+        200
       ],
       "no-underscore-dangle": "off",
       "no-param-reassign": "off",
